@@ -3,10 +3,13 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { signInStart,signInSuccess,signInFailure } from "../redux/user/userSlice";  
+import {useDispatch,useSelector} from "react-redux"
+
 export default function SignIn() {
   const [formData, setFormData] = useState({});
-
-  const [loading, setLoading] = useState(false);
+  const {loading}=useSelector((state)=>state.user)
+ const dispatch=useDispatch()
   const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({
@@ -17,15 +20,15 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
+      dispatch(signInStart())
       const { data } = await axios.post("/api/users/sign-in", formData);
       console.log(data);
       if (data.success === false) {
-        setLoading(false);
+        dispatch(signInFailure())
         toast.error(data.message);
         return;
       }
-      setLoading(false);
+      dispatch(signInSuccess(data))
       toast.success("😊");
       navigate("/");
     } catch (error) {
