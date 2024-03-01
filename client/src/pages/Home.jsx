@@ -1,9 +1,20 @@
-import React from 'react'
+import React, { useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 const Home = () => {
-  return (
-    <div>Home</div>
-  )
-}
+  const homePageReload = () => {
+    return toast('🦄 welcome to clear estate', {
+      position: 'top-center',
+      autoClose: 2000,
+    
+    });
+  };
 
-export default Home
+  useEffect(() => {
+    homePageReload();
+  }, []);
+
+  return <div>Home</div>;
+};
+
+export default Home;
