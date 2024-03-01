@@ -4,7 +4,7 @@ import express, { urlencoded } from "express";
 import mongoose from "mongoose";
 // router imports
 import { userRouter } from "./src/routes/user-route.js";
-import { SignUpRouter } from "./src/routes/auth-signup.js";
+import { SignUpRouter } from "./src/routes/auth-routes.js";
 
 const app = express();
 
