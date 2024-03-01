@@ -5,7 +5,7 @@ const Home = () => {
   const homePageReload = () => {
     return toast('🦄 welcome to clear estate', {
       position: 'top-center',
-      autoClose: 2000,
+      autoClose: 5000,
     
     });
   };
