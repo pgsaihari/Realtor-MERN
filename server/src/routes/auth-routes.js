@@ -6,4 +6,4 @@ const router =express.Router()
 router.post("/sign-up",signUpController)
 router.post('/sign-in',signInController)
 router.post('/google',googleController)
-export {router as SignUpRouter}
+export {router as authRouter}
