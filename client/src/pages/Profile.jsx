@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import { useRef, useState, useEffect } from "react";
 import {
   getDownloadURL,
@@ -7,6 +7,9 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import { updateUserSuccess } from "../redux/user/userSlice";
+import axios from 'axios'
+import {toast } from "react-toastify"
 
 export default function Profile() {
   const fileRef = useRef(null);
@@ -15,6 +18,36 @@ export default function Profile() {
   const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
+  const [loading,setLoading]=useState(false)
+  const dispatch=useDispatch()
+  
+const handleChange=(e)=>{
+  setFormData({...formData,[e.target.id]:e.target.value});
+}
+
+const handleSubmit=async(e)=>{
+  e.preventDefault()
+  try{
+      setLoading(true)
+      const {data}=await axios.post(`/api/users/update/${currentUser._id}`,formData)
+      if(data.success===false){
+        setLoading(false)
+        return toast.info(data.message)
+
+      }
+
+      dispatch(updateUserSuccess(data))
+      setLoading(false)
+      toast.success("successfully updated")
+  }
+  catch(error){
+    setLoading(false)
+    console.log(error.msg)
+    return toast.error("Updating Failed")
+
+  }
+
+}
 
   useEffect(() => {
     if (file) {
@@ -48,7 +81,7 @@ export default function Profile() {
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <form className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           onChange={(e) => setFile(e.target.files[0])}
           type="file"
@@ -77,24 +110,28 @@ export default function Profile() {
         </p>
         <input
           type="text"
-          placeholder="username"
+          placeholder="username"  defaultValue={currentUser.username}
           id="username"
-          className="border p-3 rounded-lg"
+          className="border p-3 rounded-lg" onChange={handleChange}
+
         />
         <input
           type="email"
-          placeholder="email"
+          placeholder="email" defaultValue={currentUser.email}
           id="email"
-          className="border p-3 rounded-lg"
+          className="border p-3 rounded-lg" onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="password"
+          placeholder="password" 
           id="password"
-          className="border p-3 rounded-lg"
+          className="border p-3 rounded-lg" onChange={handleChange}
         />
-        <button className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80">
-          update
+         <button
+          disabled={loading}
+          className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
+        >
+          {loading ? 'Loading...' : 'Update'}
         </button>
       </form>
       <div className="flex justify-between mt-5">
