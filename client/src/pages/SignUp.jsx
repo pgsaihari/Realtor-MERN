@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import {useNavigate} from "react-router-dom"
 import axios from "axios";
+import Oauth from "../components/Oauth";
 const SignUp = () => {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -66,6 +67,7 @@ const SignUp = () => {
         <button disabled={loading} className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
          {loading? "Loading" : "SignUp"}
         </button>
+        <Oauth/>
       </form>
       <div className="flex gap-2 mt-5">
         <p>Have an account?</p>

@@ -39,25 +39,72 @@ export const signInController = async (req, res, next) => {
   try {
     const validUser = await User.findOne({ email });
     if (!validUser) {
-      return res.status(201).send({ success: false, message: "Email is not registered" });
+      return res
+        .status(201)
+        .send({ success: false, message: "Email is not registered" });
     }
 
     const validPassword = bcrypt.compareSync(password, validUser.password);
     if (!validPassword) {
-      return res.status(201).send({ success: false, message: "Invalid Credentials" });
+      return res
+        .status(201)
+        .send({ success: false, message: "Invalid Credentials" });
     }
 
     const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
     const { password: pass, ...rest } = validUser._doc;
 
     // Combine setting cookie and sending response in a single send call
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      expires: new Date(Date.now() + 24 * 60 * 60 * 10),
-    }).status(200).send(rest);
+    res
+      .cookie("access_token", token, {
+        httpOnly: true,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 10),
+      })
+      .status(200)
+      .send(rest);
   } catch (error) {
     console.log(error);
     return next(errorHandler(500, "Something went wrong"));
   }
 };
-;
+
+export const googleController = async (req, res, next) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (user) {
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      const { password: pass, ...rest } = user._doc;
+      return res
+        .cookie("access_token", token, {
+          httpOnly: true,
+          expires: new Date(Date.now() + 24 * 60 * 60 * 10),
+        })
+        .status(200)
+        .send(rest);
+    } else {
+      const generatedPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = bcrypt.hashSync(generatedPassword, 10);
+      const newUser = new User({
+        username:
+          req.body.name.split(" ").join("").toLowerCase() +
+          Math.random().toString(36).slice(-4),
+        email: req.body.email,
+        password: hashedPassword,
+        avatar: req.body.photo,
+      });
+      await newUser.save();
+      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+      const { password: pass, ...rest } = newUser._doc;
+      return res
+        .cookie("access_token", token, {
+          httpOnly: true,
+          expires: new Date(Date.now() + 24 * 60 * 60 * 10),
+        })
+        .status(200)
+        .send(rest);
+    }
+  } catch (error) {
+    console.log(error);
+    return next(errorHandler(500, "Google Auth Failed"));
+  }
+};
