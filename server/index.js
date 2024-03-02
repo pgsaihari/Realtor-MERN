@@ -5,10 +5,11 @@ import mongoose from "mongoose";
 // router imports
 import { userRouter } from "./src/routes/user-route.js";
 import { authRouter } from "./src/routes/auth-routes.js";
-
+import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(express.json())
+app.use(cookieParser())
 app.use('/api/users',userRouter)
 app.use('/api/users',authRouter)
 app.use((err, req, res, next) => {
