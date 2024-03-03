@@ -1,6 +1,7 @@
 import express from 'express'
 import { createListing } from '../controllers/listing-controller.js'
+import { verifyToken } from '../utils/verifyToken.js'
 const router=express.Router()
-router.get('/create',createListing)
+router.post('/create',verifyToken,createListing)
 
 export {router as ListingRouter}
