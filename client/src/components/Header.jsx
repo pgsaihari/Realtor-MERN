@@ -4,20 +4,21 @@ import { useSelector, useDispatch } from "react-redux";
 import { signOutSuccess } from "../redux/user/userSlice";
 import { toast } from "react-toastify";
 import axios from 'axios'
-
+import {useNavigate} from 'react-router-dom'
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch=useDispatch()
+  const navigate=useNavigate()
   const handleSignOut = async () => {
     try {
       
       const { data } = await axios.get("/api/users/sign-out");
       if (data.success === false) {
        
-        return toast.info("Signout failed");
+        return toast.info("Sign-out failed");
       }
-     
+      navigate('/sign-out')
       dispatch(signOutSuccess());
       return toast("Logged Out👋 Bye...");
     } catch (error) {

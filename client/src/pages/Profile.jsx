@@ -7,10 +7,14 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
-import { updateUserSuccess, deleteUserSuccess,signOutSuccess } from "../redux/user/userSlice";
+import {
+  updateUserSuccess,
+  deleteUserSuccess,
+  signOutSuccess,
+} from "../redux/user/userSlice";
 import axios from "axios";
 import { toast } from "react-toastify";
-import {Link} from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const fileRef = useRef(null);
@@ -21,6 +25,9 @@ export default function Profile() {
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const [showListingsError, setShowListingsError] = useState(false);
+  const [userListings, setUserListings] = useState([]);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -100,23 +107,24 @@ export default function Profile() {
   };
 
   // signOut function
-  const handleSignOut=async()=>{
+  const handleSignOut = async () => {
     try {
-      setLoading(true)
-      const {data}=await axios.get('/api/users/sign-out')
-      if(data.success===false){
-        setLoading(false)
-        return toast.info("Signout failed")
+      setLoading(true);
+      const { data } = await axios.get("/api/users/sign-out");
+      if (data.success === false) {
+        setLoading(false);
+        return toast.info("Signout failed");
       }
-      setLoading(false)
-      dispatch(signOutSuccess()) 
-      return toast("Logged Out👋 Bye...") 
+      setLoading(false);
+      dispatch(signOutSuccess());
+      navigate("/sign-in");
+      return toast("Logged Out👋 Bye...");
     } catch (error) {
-      setLoading(false)
-      console.log(false)
-      return toast.error("Sign Out failed")
+      setLoading(false);
+      console.log(false);
+      return toast.error("Sign Out failed");
     }
-  }
+  };
 
   // * page loader
   const pageReload = () => {
@@ -137,6 +145,43 @@ export default function Profile() {
     pageReload();
   }, []);
 
+  const handleShowListings = async () => {
+    try {
+      setShowListingsError(false);
+      const { data } = await axios.get(
+        `/api/users/listings/${currentUser._id}`
+      );
+      if (data.success === false) {
+        setShowListingsError(true);
+        toast.warning(data.message);
+        return;
+      }
+
+      setUserListings(data);
+    } catch (error) {
+      setShowListingsError(true);
+    }
+  };
+
+  const handleListingDelete = async (listingId) => {
+    try {
+      alert("Confirm Deletion?")
+      const {data}=await axios.delete(`/api/listing/delete/${listingId}`)
+      if (data.success === false) {
+        console.log(data.message);
+        toast.error(data.message)
+        return;
+      }
+
+      setUserListings((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
+      toast.info("deleted")
+    } catch (error) {
+      console.log(error.message);
+      
+    }
+  };
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -196,7 +241,10 @@ export default function Profile() {
         >
           {loading ? "Loading..." : "Update"}
         </button>
-        <Link className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95' to={"/create-listing"}>
+        <Link
+          className="bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95"
+          to={"/create-listing"}
+        >
           Create Listing
         </Link>
       </form>
@@ -207,8 +255,54 @@ export default function Profile() {
         >
           Delete account
         </span>
-        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">Sign out</span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
+          Sign out
+        </span>
       </div>
+      <button onClick={handleShowListings} className="text-green-700 w-full">
+        Show Listings
+      </button>
+      <p className="text-red-700 mt-5">
+        {showListingsError ? "Error showing listings" : ""}
+      </p>
+
+      {userListings && userListings.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h1 className="text-center mt-7 text-2xl font-semibold">
+            Your Listings
+          </h1>
+          {userListings.map((listing) => (
+            <div
+              key={listing._id}
+              className="border rounded-lg p-3 flex justify-between items-center gap-4"
+            >
+              <Link to={`/listing/${listing._id}`}>
+                <img
+                  src={listing.imageUrls[0]}
+                  alt="listing cover"
+                  className="h-16 w-16 object-contain"
+                />
+              </Link>
+              <Link
+                className="text-slate-700 font-semibold  hover:underline truncate flex-1"
+                to={`/listing/${listing._id}`}
+              >
+                <p>{listing.name}</p>
+              </Link>
+
+              <div className="flex flex-col item-center">
+                <button
+                  onClick={() => handleListingDelete(listing._id)}
+                  className="text-red-700 uppercase"
+                >
+                  Delete
+                </button>
+                <button className="text-green-700 uppercase">Edit</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
