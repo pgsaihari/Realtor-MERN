@@ -1,6 +1,7 @@
 import { errorHandler } from "../utils/error.js"
 import User from "../models/user-model.js"
 import bcryptjs from "bcryptjs"
+import Listing from "../models/listing-model.js"
 export const test=(req,res)=>{
     res.send({message:"hi"})
 }
@@ -44,5 +45,24 @@ export const deleteUserController = async (req, res, next) => {
     } catch (error) {
       console.log(error)
       return next(errorHandler(500,"Deletion Failed"))
+    }
+  };
+
+
+  // get user listing
+  
+  export const getUserListings = async (req, res, next) => {
+    if (req.user.id === req.params.id) {
+      try {
+        const listings = await Listing.find({ userRef: req.params.id });
+        if(listings.length===0){
+          return res.status(201).send({success:false,message:"User has not created any Listings"})
+        }
+        res.status(200).send(listings)
+      } catch (error) {
+        next(error);
+      }
+    } else {
+      return next(errorHandler(401, 'You can only view your own listings!'));
     }
   };
