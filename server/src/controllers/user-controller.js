@@ -33,3 +33,16 @@ export const updateUserController=async(req,res,next)=>{
         return next(errorHandler(500,'Updating user failed'))
     }
 }
+
+export const deleteUserController = async (req, res, next) => {
+    if (req.params.id!==req.user.id)
+      return res.status(201).send({success:false,message:"You can Only delete your own account!"})
+    try {
+      await User.findByIdAndDelete(req.params.id);
+      res.clearCookie('access_token');
+      res.status(200).json('User has been deleted!');
+    } catch (error) {
+      console.log(error)
+      return next(errorHandler(500,"Deletion Failed"))
+    }
+  };

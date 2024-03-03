@@ -108,3 +108,12 @@ export const googleController = async (req, res, next) => {
     return next(errorHandler(500, "Google Auth Failed"));
   }
 };
+
+export const signOut=async(req,res,next)=>{
+  try {
+     return res.clearCookie('access_token').status(200).send("User has been logged put")
+  } catch (error) {
+    console.log(error)
+    return next(errorHandler(500,"Sign Out function failed!"))
+  }
+}

@@ -4,17 +4,12 @@ import { useSelector } from "react-redux";
 import {toast } from 'react-toastify'
 const PrivateRoute = () => {
   const privateReload = () => {
-    if (currentUser) {
-      return toast("🦄 Your Profile", {
+    if (!currentUser) {
+     return toast("Please Sign In with your account", {
         position: "top-center",
         autoClose: 5000,
       });
-    } else {
-        return  toast("Please Sign In to access profile", {
-            position: "top-center",
-            autoClose: 5000,
-          });
-    }
+    } 
   };
 
   useEffect(() => {

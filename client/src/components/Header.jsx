@@ -1,8 +1,31 @@
 import { FaSearch } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { signOutSuccess } from "../redux/user/userSlice";
+import { toast } from "react-toastify";
+import axios from 'axios'
+
+
 export default function Header() {
- const {currentUser}=useSelector(state=>state.user)
+  const { currentUser } = useSelector((state) => state.user);
+  const dispatch=useDispatch()
+  const handleSignOut = async () => {
+    try {
+      
+      const { data } = await axios.get("/api/users/sign-out");
+      if (data.success === false) {
+       
+        return toast.info("Signout failed");
+      }
+     
+      dispatch(signOutSuccess());
+      return toast("Logged Out👋 Bye...");
+    } catch (error) {
+     
+      console.log(error);
+      return toast.error("Sign Out failed");
+    }
+  };
   return (
     <header className="bg-slate-200 shadow-md">
       <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
@@ -23,28 +46,35 @@ export default function Header() {
         <ul className="flex gap-4">
           <Link to="/">
             <li className="hidden sm:inline text-slate-700 hover:underline">
-              Home
+            <i className="bi bi-house-door-fill"></i> Home
             </li>
           </Link>
           <Link to="/about">
             <li className="hidden sm:inline text-slate-700 hover:underline">
-              About
+            <i className="bi bi-file-person-fill"></i> About
             </li>
           </Link>
           {currentUser ? (
-            <Link to="/profile">
-              <img src={currentUser.avatar} className="rounded-full h-7 w-7 object-cover" alt='profile'/>
-            </Link>
+            <>
+              <Link to="/profile">
+                <img
+                  src={currentUser.avatar}
+                  className="rounded-full h-7 w-7 object-cover"
+                  alt="profile"
+                />
+              </Link>
+              <li className="hidden sm:inline text-slate-700 hover:underline" onClick={handleSignOut}><i className="bi bi-box-arrow-right"></i> Sign out</li>
+            </>
           ) : (
             <>
               <Link to="/sign-in">
                 <li className=" text-slate-700 hover:underline"> Sign In</li>
               </Link>
-              <Link to="/sign-in">
+              <Link to="/sign-up">
                 <li className=" text-slate-700 hover:underline"> Sign Up</li>
               </Link>
             </>
-          )} 
+          )}
         </ul>
       </div>
     </header>

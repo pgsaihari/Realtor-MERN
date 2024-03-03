@@ -1,4 +1,4 @@
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useRef, useState, useEffect } from "react";
 import {
   getDownloadURL,
@@ -7,9 +7,9 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
-import { updateUserSuccess } from "../redux/user/userSlice";
-import axios from 'axios'
-import {toast } from "react-toastify"
+import { updateUserSuccess, deleteUserSuccess,signOutSuccess } from "../redux/user/userSlice";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function Profile() {
   const fileRef = useRef(null);
@@ -18,36 +18,55 @@ export default function Profile() {
   const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
-  const [loading,setLoading]=useState(false)
-  const dispatch=useDispatch()
-  
-const handleChange=(e)=>{
-  setFormData({...formData,[e.target.id]:e.target.value});
-}
+  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
-const handleSubmit=async(e)=>{
-  e.preventDefault()
-  try{
-      setLoading(true)
-      const {data}=await axios.post(`/api/users/update/${currentUser._id}`,formData)
-      if(data.success===false){
-        setLoading(false)
-        return toast.info(data.message)
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const { data } = await axios.post(
+        `/api/users/update/${currentUser._id}`,
+        formData
+      );
+      if (data.success === false) {
+        setLoading(false);
+        return toast.info(data.message);
       }
 
-      dispatch(updateUserSuccess(data))
-      setLoading(false)
-      toast.success("successfully updated")
-  }
-  catch(error){
-    setLoading(false)
-    console.log(error.msg)
-    return toast.error("Updating Failed")
-
-  }
-
-}
+      dispatch(updateUserSuccess(data));
+      setLoading(false);
+      toast.success("successfully updated");
+    } catch (error) {
+      setLoading(false);
+      console.log(error.message);
+      return toast.error("Updating Failed");
+    }
+  };
+  const handleDeleteUser = async () => {
+    try {
+      setLoading(true);
+      await alert("Do you want to Delete the account?");
+      const { data } = await axios.delete(
+        `/api/users/delete/${currentUser._id}`
+      );
+      if (data.success === false) {
+        setLoading(false);
+        return toast.error(data.message);
+      }
+      setLoading(false);
+      dispatch(deleteUserSuccess());
+      return toast.info(" 🗑️ account deleted, We'll miss you!");
+    } catch (error) {
+      setLoading(false);
+      console.log(error.message);
+      return toast.error("Deletion Failed");
+    }
+  };
 
   useEffect(() => {
     if (file) {
@@ -78,6 +97,45 @@ const handleSubmit=async(e)=>{
       }
     );
   };
+
+  // signOut function
+  const handleSignOut=async()=>{
+    try {
+      setLoading(true)
+      const {data}=await axios.get('/api/users/sign-out')
+      if(data.success===false){
+        setLoading(false)
+        return toast.info("Signout failed")
+      }
+      setLoading(false)
+      dispatch(signOutSuccess()) 
+      return toast("Logged Out👋 Bye...") 
+    } catch (error) {
+      setLoading(false)
+      console.log(false)
+      return toast.error("Sign Out failed")
+    }
+  }
+
+  // * page loader
+  const pageReload = () => {
+    if (!currentUser) {
+      return toast("Please Sign In with your account", {
+        position: "top-center",
+        autoClose: 5000,
+      });
+    } else {
+      return toast(" 🙏 Profile page", {
+        position: "top-center",
+        autoClose: 1000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    pageReload();
+  }, []);
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -110,33 +168,42 @@ const handleSubmit=async(e)=>{
         </p>
         <input
           type="text"
-          placeholder="username"  defaultValue={currentUser.username}
+          placeholder="username"
+          defaultValue={currentUser.username}
           id="username"
-          className="border p-3 rounded-lg" onChange={handleChange}
-
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
         />
         <input
           type="email"
-          placeholder="email" defaultValue={currentUser.email}
+          placeholder="email"
+          defaultValue={currentUser.email}
           id="email"
-          className="border p-3 rounded-lg" onChange={handleChange}
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
         />
         <input
           type="text"
-          placeholder="password" 
+          placeholder="password"
           id="password"
-          className="border p-3 rounded-lg" onChange={handleChange}
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
         />
-         <button
+        <button
           disabled={loading}
-          className='bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80'
+          className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80"
         >
-          {loading ? 'Loading...' : 'Update'}
+          {loading ? "Loading..." : "Update"}
         </button>
       </form>
       <div className="flex justify-between mt-5">
-        <span className="text-red-700 cursor-pointer">Delete account</span>
-        <span className="text-red-700 cursor-pointer">Sign out</span>
+        <span
+          onClick={handleDeleteUser}
+          className="text-red-700 cursor-pointer"
+        >
+          Delete account
+        </span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">Sign out</span>
       </div>
     </div>
   );
