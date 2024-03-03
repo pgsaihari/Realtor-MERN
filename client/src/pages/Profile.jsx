@@ -165,21 +165,22 @@ export default function Profile() {
 
   const handleListingDelete = async (listingId) => {
     try {
-      alert("Confirm Deletion?")
-      const {data}=await axios.delete(`/api/listing/delete/${listingId}`)
+      alert("Confirm Deletion?");
+      const { data } = await axios.delete(`/api/listing/delete/${listingId}`);
       if (data.success === false) {
         console.log(data.message);
-        toast.error(data.message)
+        toast.error(data.message);
         return;
       }
 
       setUserListings((prev) =>
         prev.filter((listing) => listing._id !== listingId)
       );
-      toast.info("deleted")
+      toast.info("deleted");
     } catch (error) {
       console.log(error.message);
-      
+      toast.error("something went wrong");
+      return;
     }
   };
   return (
