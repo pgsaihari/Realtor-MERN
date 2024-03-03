@@ -148,8 +148,8 @@ export default function CreateListing() {
         return toast.error(data.message)
       }
       toast.success("Listing created")
-      // TODO navigate(`/listing/${data._id}`); 
-      navigate('/profile')
+      navigate(`/listing/${data._id}`); 
+      // navigate('/profile')
     } catch (error) {
       
       setLoading(false);
