@@ -111,6 +111,7 @@ export const googleController = async (req, res, next) => {
 
 export const signOut=async(req,res,next)=>{
   try {
+    console.log('signing out')
      return res.clearCookie('access_token').status(200).send("User has been logged put")
   } catch (error) {
     console.log(error)

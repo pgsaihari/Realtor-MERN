@@ -1,28 +1,42 @@
 import { FaSearch } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { signOutSuccess } from "../redux/user/userSlice";
 import { toast } from "react-toastify";
-import axios from 'axios'
-import {useNavigate} from 'react-router-dom'
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
-  const dispatch=useDispatch()
-  const navigate=useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set("searchTerm", searchTerm);
+    const searchQuery = urlParams.toString();
+    navigate(`/search?${searchQuery}`);
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchTermFromUrl = urlParams.get("searchTerm");
+    if (searchTermFromUrl) {
+      setSearchTerm(searchTermFromUrl);
+    }
+  }, [location.search]);
   const handleSignOut = async () => {
     try {
-      
-      const { data } = await axios.get("/api/users/sign-out");
+      const { data } = await axios.get("/api/users/user/sign-out");
       if (data.success === false) {
-       
         return toast.info("Sign-out failed");
       }
-      navigate('/sign-out')
+      navigate("/sign-out");
       dispatch(signOutSuccess());
       return toast("Logged Out👋 Bye...");
     } catch (error) {
-     
       console.log(error);
       return toast.error("Sign Out failed");
     }
@@ -36,23 +50,30 @@ export default function Header() {
             <span className="text-slate-700">Estate</span>
           </h1>
         </Link>
-        <form className="bg-slate-100 p-3 rounded-lg flex items-center">
+        <form
+          onClick={handleSubmit}
+          className="bg-slate-100 p-3 rounded-lg flex items-center"
+        >
           <input
             type="text"
             placeholder="Search..."
             className="bg-transparent focus:outline-none w-24 sm:w-64"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FaSearch className="text-slate-600" />
+          <button>
+            <FaSearch className="text-slate-600" />
+          </button>
         </form>
         <ul className="flex gap-4">
           <Link to="/">
             <li className="hidden sm:inline text-slate-700 hover:underline">
-            <i className="bi bi-house-door-fill"></i> Home
+              <i className="bi bi-house-door-fill"></i> Home
             </li>
           </Link>
           <Link to="/about">
             <li className="hidden sm:inline text-slate-700 hover:underline">
-            <i className="bi bi-file-person-fill"></i> About
+              <i className="bi bi-file-person-fill"></i> About
             </li>
           </Link>
           {currentUser ? (
@@ -64,7 +85,12 @@ export default function Header() {
                   alt="profile"
                 />
               </Link>
-              <li className="hidden sm:inline text-slate-700 hover:underline" onClick={handleSignOut}><i className="bi bi-box-arrow-right"></i> Sign out</li>
+              <li
+                className="hidden sm:inline text-slate-700 hover:underline"
+                onClick={handleSignOut}
+              >
+                <i className="bi bi-box-arrow-right"></i> Sign out
+              </li>
             </>
           ) : (
             <>

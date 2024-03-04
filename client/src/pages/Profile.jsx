@@ -110,7 +110,7 @@ export default function Profile() {
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("/api/users/sign-out");
+      const { data } = await axios.get("/api/users/user/sign-out");
       if (data.success === false) {
         setLoading(false);
         return toast.info("Signout failed");

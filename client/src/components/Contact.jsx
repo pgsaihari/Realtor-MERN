@@ -12,7 +12,7 @@ export default function Contact({ listing }) {
   useEffect(() => {
     const fetchLandlord = async () => {
       try {
-        const {data} = await axios.get(`/api/user/${listing.userRef}`);
+        const {data} = await axios.get(`/api/users/${listing.userRef}`);
         
         setLandlord(data);
       } catch (error) {

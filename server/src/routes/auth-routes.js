@@ -6,5 +6,5 @@ const router =express.Router()
 router.post("/sign-up",signUpController)
 router.post('/sign-in',signInController)
 router.post('/google',googleController)
-router.get('/sign-out',signOut)
+router.get('/user/sign-out',signOut)
 export {router as authRouter}
