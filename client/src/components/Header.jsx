@@ -33,7 +33,7 @@ export default function Header() {
       if (data.success === false) {
         return toast.info("Sign-out failed");
       }
-      navigate("/sign-out");
+      navigate("/sign-in");
       dispatch(signOutSuccess());
       return toast("Logged Out👋 Bye...");
     } catch (error) {
